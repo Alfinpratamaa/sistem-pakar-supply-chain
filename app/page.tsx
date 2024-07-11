@@ -44,7 +44,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto p-4 h-screen">
+    <div className="container max-w-3xl mx-auto p-4 h-screen">
       <h1 className="text-2xl font-bold text-center mb-8">Sistem Pakar Supply Chain</h1>
       <form onSubmit={handleSubmit} className="space-y-6 pb-20">
         {symptoms.map((symptom, index) => (
