@@ -3,6 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { causes } from '@/constant/data';
 import { fuzzify } from '@/libs/FuzzyLogic';
+import Loading from '@/app/loading';
 
 type AnswerType = { [key: string]: number };
 type ResultType = { [key: string]: number };
@@ -93,20 +94,27 @@ export default function ResultPage() {
         }
     }
 
-    if (!results) return <div>Loading...</div>;
+    if (!results) return <Loading />
 
-    const highestResult = Object.entries(results).reduce((acc, [key, value]) => {
-        return value > acc[1] ? [key, value] : acc;
-    }, ["", 0] as [string, number]);
+    const highestProbability = Math.max(...Object.values(results));
+    const highestResults = Object.entries(results)
+        .filter(([, value]) => value === highestProbability)
+        .map(([key]) => key);
 
     return (
-        <div className="container mx-auto p-4 h-screen">
+        <div className="container mx-auto p-4 max-w-3xl h-screen">
             <h1 className="text-2xl font-bold mb-4">Hasil Diagnosa</h1>
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                <span className="block sm:inline"> Berdasarkan gejala-gejala yang telah diinputkan, hasil dari diagnosis adalah <strong className="font-bold"> {causes.find(c => c.code === highestResult[0])?.name}.</strong></span>
+                <span className="block sm:inline">
+                    Berdasarkan gejala-gejala yang telah diinputkan, hasil dari diagnosis adalah <strong className="font-bold">{highestResults.map((code, index) => (
+                        <span key={code}>
+                            {causes.find(c => c.code === code)?.name}
+                            {index < highestResults.length - 1 && ', '}
+                        </span>
+                    ))}.</strong>
+                </span>
             </div>
             <div className="flex mx-auto space-x-4">
-
                 <button
                     onClick={() => setShowDetails(!showDetails)}
                     className="bg-slate-950 text-white px-4 py-2 rounded hover:bg-slate-800 transition duration-300"

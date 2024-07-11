@@ -1,10 +1,11 @@
 import ResultPage from '@/components/ResultPage';
 import { Suspense } from 'react';
+import Loading from '../loading';
 
 const DiagnosisPage = () => {
     return (
         <div>
-            <Suspense fallback={<div className='h-screen flex items-center justify-center'>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
                 <ResultPage />
             </Suspense>
         </div>
