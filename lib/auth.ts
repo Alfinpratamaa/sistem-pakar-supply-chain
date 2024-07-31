@@ -45,7 +45,20 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        return user;
+        // Casting the user object to match the User type defined in the next-auth module
+        const resultUser = {
+          id: user.id,
+          email: user.email,
+          username: user.username || "", // Ensure username is a string
+          name: user.name || "",
+          image: user.image,
+          emailVerified: user.emailVerified,
+          password: user.password||"",
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+
+        return resultUser;
       },
     }),
     GoogleProvider({
@@ -69,6 +82,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user = {
+        id: token.id,
         email: token.email,
         username: token.username,
         name: token.name,
