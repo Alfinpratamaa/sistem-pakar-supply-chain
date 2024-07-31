@@ -5,12 +5,17 @@ import { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from 'next-auth/react';
 import Loading from '../loading';
+import { useRouter } from 'next/navigation';
 
 export default function HistoryPage() {
     const [consultations, setConsultations] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const router = useRouter()
+
     const { data: session, status } = useSession();
+
+    if (!session) router.push('/login')
 
     useEffect(() => {
         const fetchData = async () => {

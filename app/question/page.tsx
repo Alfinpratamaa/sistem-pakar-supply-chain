@@ -14,6 +14,8 @@ export default function QuestionPage() {
 
     const { data: session, status } = useSession();
 
+    if (!session) router.push('/login')
+
     const userId = session?.user?.id;
 
     const skala = [
