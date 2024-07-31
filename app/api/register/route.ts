@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import prisma from "@/libs/db";
-import bcrypt from "bcrypt";
+import prisma from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export const POST = async (req: NextRequest) => {
   const { username, email, password } = await req.json();
 
   try {
-    const checkUser = await prisma.user.findUnique({
+    const checkUser = await prisma.user?.findUnique({
       where: {
         email,
       },
@@ -15,7 +15,7 @@ export const POST = async (req: NextRequest) => {
 
     if (!checkUser) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await prisma.user.create({
+      await prisma.user?.create({
         data: {
           username,
           email,

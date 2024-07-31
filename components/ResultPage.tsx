@@ -1,47 +1,102 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { causes } from '@/constant/data';
-import { fuzzify } from '@/libs/FuzzyLogic';
+import { fuzzify } from '@/lib/FuzzyLogic';
 import Loading from '@/app/loading';
+import { useSession } from 'next-auth/react';
+import { AnswerType, ResultType } from '@/types';
+import { knowledgeBase } from '@/constant/knowledgeBase';
 
-type AnswerType = { [key: string]: number };
-type ResultType = { [key: string]: number };
 
-const knowledgeBase = {
-    A: ["G01", "G03", "G10"],
-    B: ["G01", "G02", "G03"],
-    C: ["G01", "G03", "G11"],
-    D: ["G04", "G10", "G15"],
-    E: ["G11", "G14"],
-    F: ["G09", "G10", "G11", "G12", "G13", "G14", "G15"],
-    G: ["G05", "G08", "G09", "G10"],
-    H: ["G06", "G07", "G08", "G09", "G12", "G13"],
-    I: ["G01", "G02", "G07"],
-    J: ["G05", "G07", "G09", "G15"]
-};
+
+
 
 export default function ResultPage() {
     const searchParams = useSearchParams();
     const [results, setResults] = useState<ResultType | null>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { data: session, status } = useSession();
 
     const answersParam = searchParams.get('answers');
+    const userId = session?.user?.id; // Replace with actual user ID logic
+
     useEffect(() => {
         if (answersParam) {
-            try {
-                const parsedAnswers: AnswerType = JSON.parse(answersParam);
-                const diagnosis = performDiagnosis(parsedAnswers);
-                console.log(diagnosis);
-                setResults(diagnosis);
-            } catch (error) {
-                console.error("Error parsing answers:", error);
-                alert('There was an error processing your answers. Please try again.');
+            const diagnosisKey = `diagnosis_${userId}`;
+            const savedDiagnosis = localStorage.getItem(diagnosisKey);
+
+            if (savedDiagnosis) {
+                setResults(JSON.parse(savedDiagnosis));
+            } else {
+                fetchDiagnosis(answersParam, diagnosisKey);
             }
         } else {
             alert('Please answer all questions to get the diagnosis results');
         }
+
+        // Cleanup function to remove diagnosis data from local storage when leaving the page
+        return () => {
+            const diagnosisKey = `diagnosis_${userId}`;
+            localStorage.removeItem(diagnosisKey);
+        };
     }, [searchParams]);
+
+    async function fetchDiagnosis(answersParam: string, diagnosisKey: string) {
+        setLoading(true);
+        setError(null);
+        try {
+            const parsedAnswers: AnswerType = JSON.parse(answersParam);
+            const diagnosis = performDiagnosis(parsedAnswers);
+            setResults(diagnosis);
+
+            const highestProbability = Math.max(...Object.values(diagnosis));
+            const highestResults = Object.entries(diagnosis)
+                .filter(([, value]) => value === highestProbability)
+                .map(([key]) => key);
+
+            const conclusion = highestResults.map(code => causes.find(c => c.code === code)?.name).join(', ');
+            // await handleSaveConsultation(conclusion);
+            localStorage.setItem(diagnosisKey, JSON.stringify(diagnosis));
+        } catch (error) {
+            console.error("Error fetching diagnosis:", error);
+            setError('There was an error processing your answers. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleSaveConsultation(conclusion: string) {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/save-consultation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId,
+                    conclusion,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save consultation');
+            }
+
+            const data = await response.json();
+            console.log('Consultation saved:', data);
+        } catch (error) {
+            console.error('Error saving consultation:', error);
+            setError('Failed to save the consultation');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     function performDiagnosis(answers: AnswerType): ResultType {
         const fuzzySets: { [key: string]: [number, number, number] } = {
@@ -94,6 +149,9 @@ export default function ResultPage() {
         }
     }
 
+    if (loading) return <Loading />;
+    if (error) return <div>Error: {error}</div>;
+
     if (!results) return <Loading />
 
     const highestProbability = Math.max(...Object.values(results));
@@ -122,7 +180,7 @@ export default function ResultPage() {
                     {showDetails ? 'Sembunyikan Detail' : 'Tampilkan Detail'}
                 </button>
                 <button
-                    onClick={() => window.history.back()}
+                    onClick={() => useRouter().push('/')}
                     className="bg-slate-950 text-white px-4 py-2 rounded hover:bg-slate-800 transition duration-300"
                 >
                     kembali

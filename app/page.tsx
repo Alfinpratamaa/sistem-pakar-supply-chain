@@ -1,43 +1,39 @@
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const page = () => {
+const page = async () => {
+  const session = await getServerSession(authOptions);
+
+  if (!session) redirect('/login');
+
   return (
-    <div className="navbar bg-gradient-custom">
-      <div className="navbar-start">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h8m-8 6h16" />
-            </svg>
+    <>
+      <div className="container max-w-6xl mt-28 flex md:flex-row flex-col h-screen">
+        <div className="flex flex-col gap-5 max-w-xl w-full md:w-1/2 md:mt-5 md:ms-5 -mt-14  ">
+          <h1 className="font-bold md:text-3xl text-xl text-secondary-foreground">
+            Selamat Datang <span className="text-primary font-semibold md:text-3xl text-xl">{session?.user?.username || session?.user?.name}</span>
+          </h1>
+          <p>
+            Klik <span className="text-primary font-semibold">diagnosa</span> untuk menganalisa masalah yang mungkin terjadi dalam proses supply chain Anda dan temukan solusi yang efisien untuk mengatasinya. Dengan bantuan sistem pakar ini, Anda dapat meningkatkan efisiensi, mengurangi biaya, dan memastikan kelancaran operasi bisnis Anda.
+          </p>
+          <div className="flex md:flex-row flex-col gap-5">
+            <Link href={"/question"}>
+              <Button className="w-full md:w-32 h-auto" variant={"default"}>Diagnosa</Button>
+            </Link>
+            <Link href={"history"}>
+              <Button className="w-full md:w-32 h-auto border border-primary" variant={"outline"}>History</Button>
+            </Link>
           </div>
         </div>
-        <a className="btn btn-ghost text-xl">Sipakar Supply Chain</a>
+        <div className="w-1/2 flex justify-center md:mt-0 mt-5 mx-auto md:mx-0">
+          <img src="/images/oip.png" alt="Supply Chain" className="max-w-full h-[300px]" />
+        </div>
       </div>
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link href="/history">history</Link></li>
-          <li>
-            <Link href="new">
-              new
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <div className="navbar-end">
-        <a className="btn">logout</a>
-      </div>
-    </div>
-  )
-}
+    </>
+  );
+};
 
-export default page
+export default page;

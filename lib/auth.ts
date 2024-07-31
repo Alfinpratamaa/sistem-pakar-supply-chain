@@ -1,11 +1,11 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import prisma from "@/lib/db";
 
-import prisma from "@/libs/db";
-
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -22,7 +22,7 @@ export const authOptions = {
           placeholder: "*******",
         },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -33,13 +33,17 @@ export const authOptions = {
 
         if (
           !user ||
-          !(await bcrypt.compare(credentials.password, user.password))
+          !(await bcrypt.compare(credentials.password, user.password!))
         ) {
           throw new Error("Invalid credentials");
         }
 
         return user;
       },
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   session: {
@@ -51,21 +55,26 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.username = user.username;
         token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = { id: token.id, email: token.email, name: token.name };
+      session.user = {
+        id: token.id,
+        email: token.email,
+        username: token.username,
+        name: token.name,
+      };
       return session;
     },
     async signIn({ user, account, profile, email, credentials }) {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      // redirect to home page after sign in
       return baseUrl;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-} satisfies NextAuthOptions;
+};
