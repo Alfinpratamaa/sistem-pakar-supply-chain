@@ -24,7 +24,7 @@ const causes = [
   { code: "A", name: "Keterlambatan Pengiriman Bahan Baku" },
   { code: "B", name: "Pemrosesan yang Tidak Sesuai Standar" },
   { code: "C", name: "Gangguan pada Transportasi dan Bencana alam" },
-  { code: "D", name: "Perubahan Permintaan yang Tidak Terduga" },
+  { code: "D", name: "Perubahan Permintaan yang tidak terduga" },
   { code: "E", name: "Kondisi Transportasi yang Buruk" },
   { code: "F", name: "Kesalahan Pengiriman" },
   { code: "G", name: "Miskomunikasi" },
