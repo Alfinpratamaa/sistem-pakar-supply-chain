@@ -4,9 +4,6 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/lib/db";
-import { User } from "@/types";
-
-type SafeUser = Omit<User, "password"> & { password: string };
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -72,7 +69,6 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user = {
-        id: token.id,
         email: token.email,
         username: token.username,
         name: token.name,
