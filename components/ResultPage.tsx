@@ -1,5 +1,5 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { causes } from '@/constant/data';
 import { fuzzify } from '@/lib/FuzzyLogic';
@@ -7,6 +7,7 @@ import Loading from '@/app/loading';
 import { useSession } from 'next-auth/react';
 import { AnswerType, ResultType } from '@/types';
 import { knowledgeBase } from '@/constant/knowledgeBase';
+import Link from 'next/link';
 
 
 
@@ -179,12 +180,13 @@ export default function ResultPage() {
                 >
                     {showDetails ? 'Sembunyikan Detail' : 'Tampilkan Detail'}
                 </button>
-                <button
-                    onClick={() => useRouter().push('/')}
+                <Link href={'/question'} >
+                    <button
                     className="bg-slate-950 text-white px-4 py-2 rounded hover:bg-slate-800 transition duration-300"
-                >
+                    >
                     kembali
                 </button>
+                </Link>
             </div>
             {showDetails && (
                 <div className="mt-4">
