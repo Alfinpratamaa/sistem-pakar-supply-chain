@@ -61,7 +61,11 @@ export default function HistoryPage() {
                         <TableRow key={consultation.id}>
                             <TableCell>{index + 1}</TableCell>
                             <TableCell>{consultation?.user?.email}</TableCell>
-                            <TableCell>{new Date(consultation.createdAt).toLocaleString()}</TableCell>
+                            <TableCell>{new Date(consultation.createdAt).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                            })}</TableCell>
                             <TableCell>{consultation.conclusion}</TableCell>
                         </TableRow>
                     ))}
