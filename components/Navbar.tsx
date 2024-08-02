@@ -83,13 +83,14 @@ const Navbar = () => {
                     <Button
                         variant="outline"
                         onClick={handleLogout}
-                        className='bg-red-700 text-white font-bold mx-auto justify-center mt-2'
+                        className='bg-red-700 text-white flex font-bold mx-auto justify-center mt-4'
                     >
                         Logout
                     </Button>
                 ) : (
                     <Button
                         variant="outline"
+                            className='flex bg-primary text-white font-bold mx-auto justify-center mt-4'
                         onClick={() => router.push('/login')}
                     >
                         Login
